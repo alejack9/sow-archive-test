@@ -55,6 +55,31 @@ h2 { margin-top: 0; color: var(--accent); }
 ul { margin: .4rem 0 .1rem 1.1rem; }
 .note { color: #ffd59e; }
 
+.techniques-table-wrap {
+  overflow-x: auto;
+  margin: .6rem 0;
+}
+
+.techniques-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+.techniques-table th,
+.techniques-table td {
+  border: 1px solid #2b3240;
+  padding: .55rem .65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.techniques-table th {
+  background: #222a38;
+  color: var(--accent);
+}
+
+
 .inline-cta {
   display: inline-block;
   color: var(--text);
