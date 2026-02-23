@@ -23,6 +23,11 @@ body {
 .topbar h1 { margin: 0; font-size: 1.25rem; }
 .topbar p { margin: .3rem 0 0; color: var(--muted); font-size: .92rem; }
 .layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 84px); }
+
+.sidebar-toggle-mobile {
+  display: none;
+}
+
 .sidebar {
   border-right: 1px solid #2b3240;
   padding: 1rem;
@@ -163,12 +168,51 @@ ul { margin: .4rem 0 .1rem 1.1rem; }
   background: #2a3549;
 }
 @media (max-width: 900px) {
+  .topbar {
+    position: static;
+  }
+
   .layout { grid-template-columns: 1fr; }
+
+  .sidebar-toggle-mobile {
+    display: block;
+    margin: .9rem 1rem 0;
+    border: 1px solid #36435b;
+    background: #222a38;
+    color: var(--text);
+    border-radius: .5rem;
+    padding: .65rem .8rem;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+  }
+
   .sidebar {
     position: static;
     border-right: 0;
     border-bottom: 1px solid #2b3240;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    display: none;
+    gap: .45rem;
+    padding: .85rem 1rem 1rem;
+  }
+
+  .sidebar.is-open {
+    display: flex;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  section {
+    padding: .9rem;
+  }
+
+  .sidebar-search {
+    margin-bottom: .45rem;
+  }
+
+  .sidebar a {
+    padding: .55rem .6rem;
   }
 }

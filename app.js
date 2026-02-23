@@ -3,6 +3,8 @@ const sections = links
   .map(a => document.querySelector(a.getAttribute('href')))
   .filter(Boolean);
 const sidebarSearchInput = document.querySelector('#sidebar-search-input');
+const sidebarToggleButton = document.querySelector('#sidebar-toggle');
+const sidebarNav = document.querySelector('#sidebar-nav');
 
 const collapsibleSections = [...document.querySelectorAll('main section')];
 
@@ -53,10 +55,24 @@ const openSectionFromHash = () => {
   const target = document.querySelector(window.location.hash);
   if (!target || !target.matches('section')) return;
   setSectionOpen(target, true);
+
+  if (window.matchMedia('(max-width: 900px)').matches && sidebarNav && sidebarToggleButton) {
+    sidebarNav.classList.remove('is-open');
+    sidebarToggleButton.setAttribute('aria-expanded', 'false');
+    sidebarToggleButton.textContent = 'Apri navigazione';
+  }
 };
 
 openSectionFromHash();
 window.addEventListener('hashchange', openSectionFromHash);
+
+if (sidebarToggleButton && sidebarNav) {
+  sidebarToggleButton.addEventListener('click', () => {
+    const isOpen = sidebarNav.classList.toggle('is-open');
+    sidebarToggleButton.setAttribute('aria-expanded', String(isOpen));
+    sidebarToggleButton.textContent = isOpen ? 'Chiudi navigazione' : 'Apri navigazione';
+  });
+}
 
 if (sections.length) {
   const obs = new IntersectionObserver((entries) => {

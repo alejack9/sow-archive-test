@@ -13,7 +13,16 @@
   </header>
 
   <div class="layout">
-    <nav class="sidebar" aria-label="Navigazione rapida">
+    <button
+      id="sidebar-toggle"
+      class="sidebar-toggle-mobile"
+      type="button"
+      aria-expanded="false"
+      aria-controls="sidebar-nav"
+    >
+      Apri navigazione
+    </button>
+    <nav id="sidebar-nav" class="sidebar" aria-label="Navigazione rapida">
       <label class="sidebar-search" for="sidebar-search-input">
         <span class="sidebar-search-label">Cerca sezioni</span>
         <input id="sidebar-search-input" type="search" placeholder="Es. Momentum, Spirale..." autocomplete="off" />
