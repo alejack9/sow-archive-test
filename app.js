@@ -3,6 +3,8 @@ const sections = links
   .map(a => document.querySelector(a.getAttribute('href')))
   .filter(Boolean);
 const sidebarSearchInput = document.querySelector('#sidebar-search-input');
+const sidebarToggleButton = document.querySelector('#sidebar-toggle');
+const sidebarNav = document.querySelector('#sidebar-nav');
 
 const collapsibleSections = [...document.querySelectorAll('main section')];
 
@@ -53,10 +55,24 @@ const openSectionFromHash = () => {
   const target = document.querySelector(window.location.hash);
   if (!target || !target.matches('section')) return;
   setSectionOpen(target, true);
+
+  if (window.matchMedia('(max-width: 900px)').matches && sidebarNav && sidebarToggleButton) {
+    sidebarNav.classList.remove('is-open');
+    sidebarToggleButton.setAttribute('aria-expanded', 'false');
+    sidebarToggleButton.textContent = 'Apri navigazione';
+  }
 };
 
 openSectionFromHash();
 window.addEventListener('hashchange', openSectionFromHash);
+
+if (sidebarToggleButton && sidebarNav) {
+  sidebarToggleButton.addEventListener('click', () => {
+    const isOpen = sidebarNav.classList.toggle('is-open');
+    sidebarToggleButton.setAttribute('aria-expanded', String(isOpen));
+    sidebarToggleButton.textContent = isOpen ? 'Chiudi navigazione' : 'Apri navigazione';
+  });
+}
 
 if (sections.length) {
   const obs = new IntersectionObserver((entries) => {
@@ -81,13 +97,48 @@ if (sidebarSearchInput) {
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 
+  const crossPageSearchIndex = new Map();
+
+  const updateCrossPageIndex = async () => {
+    const externalLinks = links.filter((link) => {
+      const href = link.getAttribute('href');
+      return href && !href.startsWith('#');
+    });
+
+    await Promise.all(externalLinks.map(async (link) => {
+      const href = link.getAttribute('href');
+      if (!href || crossPageSearchIndex.has(href)) return;
+
+      try {
+        const response = await fetch(href);
+        if (!response.ok) {
+          crossPageSearchIndex.set(href, '');
+          return;
+        }
+
+        const html = await response.text();
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const pageText = normalizeText(parsed.body?.textContent || '');
+        crossPageSearchIndex.set(href, pageText);
+      } catch {
+        crossPageSearchIndex.set(href, '');
+      }
+    }));
+  };
+
   const filterSidebarAndSections = (query) => {
     const normalizedQuery = normalizeText(query);
 
     links.forEach((link) => {
       const href = link.getAttribute('href');
       if (!href?.startsWith('#')) {
-        link.classList.toggle('is-hidden', normalizedQuery.length > 0);
+        const linkText = normalizeText(link.textContent || '');
+        const indexedText = crossPageSearchIndex.get(href) || '';
+        const matches = normalizedQuery.length === 0
+          || linkText.includes(normalizedQuery)
+          || indexedText.includes(normalizedQuery);
+
+        link.classList.toggle('is-hidden', !matches);
         return;
       }
 
@@ -110,4 +161,6 @@ if (sidebarSearchInput) {
   sidebarSearchInput.addEventListener('input', (event) => {
     filterSidebarAndSections(event.target.value);
   });
+
+  updateCrossPageIndex();
 }
