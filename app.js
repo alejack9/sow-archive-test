@@ -2,10 +2,12 @@ const links = [...document.querySelectorAll('.sidebar a')];
 const sections = links
   .map(a => document.querySelector(a.getAttribute('href')))
   .filter(Boolean);
+const sidebarSearchInput = document.querySelector('#sidebar-search-input');
 
 const collapsibleSections = [...document.querySelectorAll('main section')];
 
 const setSectionOpen = (section, isOpen) => {
+  if (!section) return;
   const toggle = section.querySelector('.section-toggle');
   const content = section.querySelector('.section-content');
   if (!toggle || !content) return;
@@ -70,4 +72,42 @@ if (sections.length) {
   }, { rootMargin: '-30% 0px -60% 0px', threshold: 0.1 });
 
   sections.forEach(section => obs.observe(section));
+}
+
+if (sidebarSearchInput) {
+  const normalizeText = (value) => value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+
+  const filterSidebarAndSections = (query) => {
+    const normalizedQuery = normalizeText(query);
+
+    links.forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href?.startsWith('#')) {
+        link.classList.toggle('is-hidden', normalizedQuery.length > 0);
+        return;
+      }
+
+      const targetSection = document.querySelector(href);
+      const linkText = normalizeText(link.textContent || '');
+      const sectionText = normalizeText(targetSection?.textContent || '');
+      const matches = normalizedQuery.length === 0
+        || linkText.includes(normalizedQuery)
+        || sectionText.includes(normalizedQuery);
+
+      link.classList.toggle('is-hidden', !matches);
+      targetSection?.classList.toggle('is-hidden-by-search', !matches);
+
+      if (!matches) {
+        setSectionOpen(targetSection, false);
+      }
+    });
+  };
+
+  sidebarSearchInput.addEventListener('input', (event) => {
+    filterSidebarAndSections(event.target.value);
+  });
 }
