@@ -81,13 +81,48 @@ if (sidebarSearchInput) {
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 
+  const crossPageSearchIndex = new Map();
+
+  const updateCrossPageIndex = async () => {
+    const externalLinks = links.filter((link) => {
+      const href = link.getAttribute('href');
+      return href && !href.startsWith('#');
+    });
+
+    await Promise.all(externalLinks.map(async (link) => {
+      const href = link.getAttribute('href');
+      if (!href || crossPageSearchIndex.has(href)) return;
+
+      try {
+        const response = await fetch(href);
+        if (!response.ok) {
+          crossPageSearchIndex.set(href, '');
+          return;
+        }
+
+        const html = await response.text();
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const pageText = normalizeText(parsed.body?.textContent || '');
+        crossPageSearchIndex.set(href, pageText);
+      } catch {
+        crossPageSearchIndex.set(href, '');
+      }
+    }));
+  };
+
   const filterSidebarAndSections = (query) => {
     const normalizedQuery = normalizeText(query);
 
     links.forEach((link) => {
       const href = link.getAttribute('href');
       if (!href?.startsWith('#')) {
-        link.classList.toggle('is-hidden', normalizedQuery.length > 0);
+        const linkText = normalizeText(link.textContent || '');
+        const indexedText = crossPageSearchIndex.get(href) || '';
+        const matches = normalizedQuery.length === 0
+          || linkText.includes(normalizedQuery)
+          || indexedText.includes(normalizedQuery);
+
+        link.classList.toggle('is-hidden', !matches);
         return;
       }
 
@@ -110,4 +145,6 @@ if (sidebarSearchInput) {
   sidebarSearchInput.addEventListener('input', (event) => {
     filterSidebarAndSections(event.target.value);
   });
+
+  updateCrossPageIndex();
 }
