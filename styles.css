@@ -52,6 +52,38 @@ section {
   margin-bottom: 1rem;
 }
 h2 { margin-top: 0; color: var(--accent); }
+
+.section-toggle {
+  width: 100%;
+  border: 1px solid #36435b;
+  background: #222a38;
+  color: var(--text);
+  border-radius: .55rem;
+  padding: .65rem .8rem;
+  font: inherit;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.section-toggle:hover {
+  background: #2a3549;
+}
+
+.section-chevron {
+  transition: transform .2s ease;
+}
+
+section.is-open .section-chevron {
+  transform: rotate(90deg);
+}
+
+.section-content {
+  margin-top: .9rem;
+}
 ul { margin: .4rem 0 .1rem 1.1rem; }
 .note { color: #ffd59e; }
 
