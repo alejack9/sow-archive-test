@@ -98,36 +98,11 @@ if (sidebarSearchInput) {
     .trim();
 
   const crossPageSearchIndex = new Map();
-
-  const updateCrossPageIndex = async () => {
-    const externalLinks = links.filter((link) => {
-      const href = link.getAttribute('href');
-      return href && !href.startsWith('#');
-    });
-
-    await Promise.all(externalLinks.map(async (link) => {
-      const href = link.getAttribute('href');
-      if (!href || crossPageSearchIndex.has(href)) return;
-
-      try {
-        const response = await fetch(href);
-        if (!response.ok) {
-          crossPageSearchIndex.set(href, '');
-          return;
-        }
-
-        const html = await response.text();
-        const parsed = new DOMParser().parseFromString(html, 'text/html');
-        const pageText = normalizeText(parsed.body?.textContent || '');
-        crossPageSearchIndex.set(href, pageText);
-      } catch {
-        crossPageSearchIndex.set(href, '');
-      }
-    }));
-  };
+  let lastSearchQuery = '';
 
   const filterSidebarAndSections = (query) => {
     const normalizedQuery = normalizeText(query);
+    lastSearchQuery = query;
 
     links.forEach((link) => {
       const href = link.getAttribute('href');
@@ -156,6 +131,35 @@ if (sidebarSearchInput) {
         setSectionOpen(targetSection, false);
       }
     });
+  };
+
+  const updateCrossPageIndex = async () => {
+    const externalLinks = links.filter((link) => {
+      const href = link.getAttribute('href');
+      return href && !href.startsWith('#');
+    });
+
+    await Promise.all(externalLinks.map(async (link) => {
+      const href = link.getAttribute('href');
+      if (!href || crossPageSearchIndex.has(href)) return;
+
+      try {
+        const response = await fetch(href);
+        if (!response.ok) {
+          crossPageSearchIndex.set(href, '');
+          return;
+        }
+
+        const html = await response.text();
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const pageText = normalizeText(parsed.body?.textContent || '');
+        crossPageSearchIndex.set(href, pageText);
+      } catch {
+        crossPageSearchIndex.set(href, '');
+      }
+    }));
+
+    filterSidebarAndSections(lastSearchQuery);
   };
 
   sidebarSearchInput.addEventListener('input', (event) => {
